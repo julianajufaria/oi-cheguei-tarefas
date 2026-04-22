@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oi, Cheguei — Gestão de Tarefas</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F5F5F3; color: #1a1a1a; min-height: 100vh; }
+  .topbar { background: #fff; border-bottom: 1px solid #e5e5e2; padding: 0 2rem; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 28px; height: 28px; background: #FFE600; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #333; flex-shrink: 0; }
+  .topbar h1 { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+  .topbar-right { font-size: 12px; color: #888; }
+  .container { max-width: 960px; margin: 0 auto; padding: 1.5rem 1.5rem; }
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .stat { background: #fff; border-radius: 10px; padding: 12px 14px; border: 1px solid #eee; }
+  .stat-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .stat-val { font-size: 22px; font-weight: 600; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center; }
+  .filter-btn { font-size: 12px; padding: 5px 14px; border-radius: 20px; border: 1px solid #ddd; background: #fff; color: #555; cursor: pointer; transition: all .15s; }
+  .filter-btn:hover { border-color: #aaa; }
+  .filter-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .add-btn { margin-left: auto; font-size: 13px; padding: 7px 16px; border-radius: 8px; border: 1px solid #ddd; background: #fff; color: #333; cursor: pointer; font-weight: 500; }
+  .add-btn:hover { background: #f5f5f3; }
+  .task-list { display: flex; flex-direction: column; gap: 8px; }
+  .task-card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 14px 16px; transition: box-shadow .15s; }
+  .task-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .task-card.done { opacity: .6; }
+  .task-row1 { display: flex; align-items: flex-start; gap: 10px; }
+  .task-text { font-size: 14px; line-height: 1.45; flex: 1; }
+  .task-card.done .task-text { text-decoration: line-through; color: #aaa; }
+  .task-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; align-items: center; }
+  .badge { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+  .meta-item { font-size: 11px; color: #999; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 3px; vertical-align: middle; }
+  .edit-btn { font-size: 11px; padding: 3px 10px; border-radius: 6px; border: 1px solid #e5e5e2; background: transparent; color: #aaa; cursor: pointer; }
+  .edit-btn:hover { color: #555; border-color: #bbb; }
+  .del-btn { font-size: 11px; padding: 3px 8px; border-radius: 6px; border: 1px solid #fee; background: transparent; color: #e57; cursor: pointer; }
+  .del-btn:hover { background: #fff0f3; }
+  .empty { text-align: center; padding: 3rem; color: #bbb; font-size: 14px; }
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+  .overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 14px; padding: 1.5rem; width: 100%; max-width: 520px; margin: 1rem; max-height: 90vh; overflow-y: auto; }
+  .modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 1.25rem; }
+  .field { margin-bottom: 14px; }
+  .field label { font-size: 12px; color: #666; display: block; margin-bottom: 5px; font-weight: 500; }
+  .field input, .field select, .field textarea { width: 100%; font-size: 13px; padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; color: #1a1a1a; background: #fff; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #aaa; }
+  .field textarea { min-height: 72px; resize: vertical; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .recur-row { display: flex; align-items: center; gap: 8px; }
+  .recur-row input[type=checkbox] { width: auto; }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #f0f0ee; }
+  .btn-save { font-size: 13px; padding: 8px 20px; border-radius: 8px; border: none; background: #1a1a1a; color: #fff; cursor: pointer; font-weight: 500; }
+  .btn-save:hover { background: #333; }
+  .btn-cancel { font-size: 13px; padding: 8px 16px; border-radius: 8px; border: 1px solid #ddd; background: transparent; color: #555; cursor: pointer; }
+  .sheets-link { font-size: 12px; color: #1a73e8; text-decoration: none; }
+  .sheets-link:hover { text-decoration: underline; }
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(3, 1fr); }
+    .field-row { grid-template-columns: 1fr; }
+    .topbar { padding: 0 1rem; }
+    .container { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">OC</div>
+    <h1>Oi, Cheguei — Gestão de Tarefas</h1>
+  </div>
+  <div class="topbar-right">
+    <a class="sheets-link" href="https://docs.google.com/spreadsheets/d/1ZMIzVEnumSDMYCxQwf20Y9quJf_aVGnVgg5amSoSSwY/edit" target="_blank">Ver planilha ↗</a>
+  </div>
+</div>
+
+<div class="container">
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-val" id="s0" style="color:#1a1a1a">0</div></div>
+    <div class="stat"><div class="stat-label">Pendente</div><div class="stat-val" id="s1" style="color:#D85A30">0</div></div>
+    <div class="stat"><div class="stat-label">Em andamento</div><div class="stat-val" id="s2" style="color:#378ADD">0</div></div>
+    <div class="stat"><div class="stat-label">Concluído</div><div class="stat-val" id="s3" style="color:#1D9E75">0</div></div>
+    <div class="stat"><div class="stat-label">Congelado</div><div class="stat-val" id="s4" style="color:#888">0</div></div>
+  </div>
+
+  <div class="toolbar" id="toolbar">
+    <button class="filter-btn active" data-f="all" onclick="setFilter('all',this)">Todas</button>
+    <button class="filter-btn" data-f="pendente" onclick="setFilter('pendente',this)">Pendente</button>
+    <button class="filter-btn" data-f="em andamento" onclick="setFilter('em andamento',this)">Em andamento</button>
+    <button class="filter-btn" data-f="concluído" onclick="setFilter('concluído',this)">Concluído</button>
+    <button class="add-btn" onclick="openModal(null)">+ Nova tarefa</button>
+  </div>
+
+  <div class="task-list" id="task-list"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modal-title">Nova tarefa</h2>
+    <div class="field">
+      <label>Descrição</label>
+      <textarea id="f-text" placeholder="Descreva a tarefa..."></textarea>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Responsável(is)</label>
+        <input id="f-resp" type="text" placeholder="ex: Leticia, Juliana">
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="f-status">
+          <option value="pendente">Pendente</option>
+          <option value="em andamento">Em andamento</option>
+          <option value="concluído">Concluído</option>
+          <option value="congelado">Congelado</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Data da reunião</label>
+        <input id="f-meeting" type="date">
+      </div>
+      <div class="field">
+        <label>Data de finalização</label>
+        <input id="f-finish" type="date">
+      </div>
+    </div>
+    <div class="field">
+      <label>Recorrente?</label>
+      <div class="recur-row">
+        <input type="checkbox" id="f-recur" onchange="document.getElementById('recur-wrap').style.display=this.checked?'block':'none'">
+        <span style="font-size:13px;color:#555">Sim, é recorrente</span>
+      </div>
+    </div>
+    <div class="field" id="recur-wrap" style="display:none">
+      <label>Frequência / data da recorrência</label>
+      <input id="f-recur-desc" type="text" placeholder="ex: Semanal, 2x por semana...">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveTask()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STATUS_CFG = {
+  'pendente':     {bg:'#FAECE7',fg:'#712B13',dot:'#D85A30'},
+  'em andamento': {bg:'#E6F1FB',fg:'#0C447C',dot:'#378ADD'},
+  'concluído':    {bg:'#E1F5EE',fg:'#085041',dot:'#1D9E75'},
+  'congelado':    {bg:'#F1EFE8',fg:'#444441',dot:'#888780'},
+};
+const RESP_COLORS = [
+  ['#E6F1FB','#0C447C'],['#FAEEDA','#633806'],['#FBEAF0','#72243E'],
+  ['#EAF3DE','#27500A'],['#EEEDFE','#3C3489'],['#E1F5EE','#085041'],
+];
+const respMap = {};
+let respIdx = 0;
+function respColor(n) {
+  const k = n.toLowerCase().trim();
+  if (!respMap[k]) { respMap[k] = RESP_COLORS[respIdx % RESP_COLORS.length]; respIdx++; }
+  return respMap[k];
+}
+
+const STORAGE_KEY = 'oic_v2_tasks';
+function todayISO() { return new Date().toISOString().slice(0,10); }
+function fmtDate(d) {
+  if (!d) return '';
+  if (d.includes('/')) return d;
+  const [y,m,dd] = d.split('-'); return `${dd}/${m}/${y}`;
+}
+
+const SEED = [
+  {id:1,text:'Falar com o Vitor de IS sobre o fluxo para dar a "permissão" ao usuário do rep para acessar o Google Chat',resp:['Leticia'],status:'pendente',meeting:'2026-04-20',finish:'',recur:false,recurDesc:''},
+  {id:2,text:'Mapear os novatos que estão sem linha de fretado',resp:['Juliana'],status:'pendente',meeting:'2026-04-20',finish:'',recur:false,recurDesc:''},
+  {id:3,text:'Reportar os novatos que ainda estão em aprendizagem para os reps de treinamento',resp:['Juliana'],status:'pendente',meeting:'2026-04-20',finish:'',recur:false,recurDesc:''},
+  {id:4,text:'Reciclagem dos multiplicadores de picking e put away',resp:['Joyce','Juliana'],status:'pendente',meeting:'2026-04-20',finish:'',recur:false,recurDesc:''},
+  {id:5,text:'Acompanhamento da realização da pesquisa de satisfação',resp:['Thiago'],status:'pendente',meeting:'2026-04-20',finish:'',recur:true,recurDesc:'Semanal'},
+  {id:6,text:'Problema com os usuários novatos que já trabalharam no Meli — falar com TA',resp:['Joice'],status:'pendente',meeting:'2026-04-20',finish:'',recur:false,recurDesc:''},
+  {id:7,text:'Reforço do que é demanda TL e demanda TRE em relação ao acompanhamento dos novatos',resp:['Leticia'],status:'pendente',meeting:'2026-04-20',finish:'',recur:false,recurDesc:''},
+  {id:8,text:'Reforçar a necessidade de termos suporte ativo das agências',resp:['Leticia'],status:'pendente',meeting:'2026-04-20',finish:'',recur:false,recurDesc:''},
+  {id:9,text:'Esclarecimento do programa Oi, Cheguei para o Paulinho e gerentes',resp:['Joice'],status:'concluído',meeting:'2026-04-01',finish:'2026-04-09',recur:false,recurDesc:''},
+  {id:10,text:'Projeto de acompanhamento ativo e reconhecimento dos Multiplicadores para incentivar o engajamento no processo de integração dos novatos',resp:['Joyce'],status:'em andamento',meeting:'2026-03-17',finish:'',recur:false,recurDesc:''},
+  {id:11,text:'Envio automatizado dos novatos em aprendizagem para os TLs Especialistas',resp:['Juliana'],status:'concluído',meeting:'',finish:'2026-04-20',recur:true,recurDesc:'2x / semana'},
+];
+
+let tasks = [], nextId = 12, currentFilter = 'all', editingId = null;
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { const d = JSON.parse(raw); tasks = d.tasks; nextId = d.nextId || 12; }
+    else { tasks = JSON.parse(JSON.stringify(SEED)); save(); }
+  } catch(e) { tasks = JSON.parse(JSON.stringify(SEED)); }
+  render();
+}
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({tasks, nextId})); } catch(e) {}
+}
+
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function render() {
+  document.getElementById('s0').textContent = tasks.length;
+  document.getElementById('s1').textContent = tasks.filter(t=>t.status==='pendente').length;
+  document.getElementById('s2').textContent = tasks.filter(t=>t.status==='em andamento').length;
+  document.getElementById('s3').textContent = tasks.filter(t=>t.status==='concluído').length;
+  document.getElementById('s4').textContent = tasks.filter(t=>t.status==='congelado').length;
+
+  const tb = document.getElementById('toolbar');
+  const respSet = new Set();
+  tasks.forEach(t => t.resp.forEach(r => respSet.add(r)));
+  const existing = new Set([...tb.querySelectorAll('[data-resp]')].map(b=>b.dataset.resp));
+  respSet.forEach(r => {
+    if (!existing.has(r)) {
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn'; btn.dataset.f = r; btn.dataset.resp = r; btn.textContent = r;
+      btn.onclick = function(){ setFilter(r, this); };
+      tb.insertBefore(btn, tb.querySelector('.add-btn'));
+    }
+  });
+  tb.querySelectorAll('[data-f]').forEach(b => b.classList.toggle('active', b.dataset.f === currentFilter));
+
+  let filtered = tasks;
+  if (currentFilter !== 'all') {
+    const sc = STATUS_CFG[currentFilter];
+    if (sc) filtered = tasks.filter(t => t.status === currentFilter);
+    else filtered = tasks.filter(t => t.resp.map(x=>x.toLowerCase()).includes(currentFilter.toLowerCase()));
+  }
+
+  const list = document.getElementById('task-list');
+  list.innerHTML = '';
+  if (!filtered.length) { list.innerHTML = '<div class="empty">Nenhuma tarefa encontrada.</div>'; return; }
+
+  filtered.forEach(t => {
+    const sc = STATUS_CFG[t.status] || STATUS_CFG['pendente'];
+    const respBadges = t.resp.map(r => { const [bg,fg] = respColor(r); return `<span class="badge" style="background:${bg};color:${fg}">${r}</span>`; }).join('');
+    const statusBadge = `<span class="badge" style="background:${sc.bg};color:${sc.fg}"><span class="dot" style="background:${sc.dot}"></span>${t.status}</span>`;
+    const meetMeta = t.meeting ? `<span class="meta-item">Reunião: ${fmtDate(t.meeting)}</span>` : '';
+    const finMeta = t.finish ? `<span class="meta-item">Finalizado: ${fmtDate(t.finish)}</span>` : '';
+    const recurMeta = t.recur ? `<span class="badge" style="background:#EEEDFE;color:#3C3489">Recorrente${t.recurDesc?': '+t.recurDesc:''}</span>` : '';
+    const card = document.createElement('div');
+    card.className = 'task-card' + (t.status==='concluído'?' done':'');
+    card.innerHTML = `
+      <div class="task-row1">
+        <span class="task-text">${t.text}</span>
+        <div style="display:flex;gap:6px;flex-shrink:0;margin-left:8px">
+          <button class="edit-btn" onclick="openModal(${t.id})">editar</button>
+          <button class="del-btn" onclick="deleteTask(${t.id})">×</button>
+        </div>
+      </div>
+      <div class="task-meta">${respBadges}${statusBadge}${meetMeta}${finMeta}${recurMeta}</div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function openModal(id) {
+  editingId = id;
+  document.getElementById('modal-title').textContent = id ? 'Editar tarefa' : 'Nova tarefa';
+  if (id) {
+    const t = tasks.find(x => x.id === id);
+    document.getElementById('f-text').value = t.text;
+    document.getElementById('f-resp').value = t.resp.join(', ');
+    document.getElementById('f-status').value = t.status;
+    document.getElementById('f-meeting').value = t.meeting || '';
+    document.getElementById('f-finish').value = t.finish || '';
+    document.getElementById('f-recur').checked = t.recur || false;
+    document.getElementById('f-recur-desc').value = t.recurDesc || '';
+    document.getElementById('recur-wrap').style.display = t.recur ? 'block' : 'none';
+  } else {
+    document.getElementById('f-text').value = '';
+    document.getElementById('f-resp').value = '';
+    document.getElementById('f-status').value = 'pendente';
+    document.getElementById('f-meeting').value = todayISO();
+    document.getElementById('f-finish').value = '';
+    document.getElementById('f-recur').checked = false;
+    document.getElementById('f-recur-desc').value = '';
+    document.getElementById('recur-wrap').style.display = 'none';
+  }
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+
+document.getElementById('overlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+function saveTask() {
+  const text = document.getElementById('f-text').value.trim();
+  if (!text) return;
+  const resp = document.getElementById('f-resp').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const status = document.getElementById('f-status').value;
+  const meeting = document.getElementById('f-meeting').value;
+  const finish = document.getElementById('f-finish').value;
+  const recur = document.getElementById('f-recur').checked;
+  const recurDesc = document.getElementById('f-recur-desc').value.trim();
+  if (editingId) {
+    const t = tasks.find(x => x.id === editingId);
+    Object.assign(t, {text, resp: resp.length?resp:['—'], status, meeting, finish, recur, recurDesc});
+  } else {
+    tasks.push({id: nextId++, text, resp: resp.length?resp:['—'], status, meeting, finish, recur, recurDesc});
+  }
+  save(); closeModal(); render();
+}
+
+function deleteTask(id) {
+  if (!confirm('Remover esta tarefa?')) return;
+  tasks = tasks.filter(t => t.id !== id);
+  save(); render();
+}
+
+load();
+</script>
+</body>
+</html>
