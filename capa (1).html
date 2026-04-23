@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oi, Cheguei — Mesa de Trabalho</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#1a1a1a;color:#fff;min-height:100vh;display:flex;flex-direction:column}
+
+.nav{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2.5rem;position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(26,26,26,.85);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-badge{background:#FFF159;color:#1a1a1a;font-size:13px;font-weight:800;padding:6px 11px;border-radius:6px;letter-spacing:-.3px}
+.nav-name{font-size:15px;font-weight:600;color:#fff;letter-spacing:-.2px}
+.nav-link{font-size:13px;color:#aaa;text-decoration:none;padding:7px 16px;border:1px solid #444;border-radius:6px;font-weight:500;transition:all .15s}
+.nav-link:hover{color:#fff;border-color:#888}
+
+.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:7rem 2rem 4rem;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 40%, rgba(255,241,89,.07) 0%, transparent 70%);pointer-events:none}
+
+.tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,241,89,.1);border:1px solid rgba(255,241,89,.25);color:#FFF159;font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;margin-bottom:2rem;letter-spacing:.3px}
+.tag-dot{width:6px;height:6px;border-radius:50%;background:#FFF159;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.hero h1{font-size:clamp(2.2rem,5vw,3.8rem);font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:1.5rem;max-width:700px}
+.hero h1 span{color:#FFF159}
+.hero p{font-size:clamp(1rem,2vw,1.2rem);color:#aaa;max-width:520px;line-height:1.6;margin-bottom:2.5rem}
+
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:#FFF159;color:#1a1a1a;font-size:15px;font-weight:800;padding:14px 32px;border-radius:8px;text-decoration:none;border:none;cursor:pointer;transition:all .15s;letter-spacing:-.2px}
+.btn-primary:hover{background:#FFE500;transform:translateY(-1px)}
+.btn-primary svg{width:16px;height:16px}
+
+.stats-row{display:flex;gap:2rem;justify-content:center;margin-top:4rem;flex-wrap:wrap}
+.stat-item{text-align:center}
+.stat-num{font-size:2rem;font-weight:800;color:#FFF159;line-height:1}
+.stat-lbl{font-size:12px;color:#666;margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:900px;width:100%;margin:5rem auto 0;padding:0 2rem}
+.feat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.5rem}
+.feat-icon{width:40px;height:40px;background:rgba(255,241,89,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:18px}
+.feat h3{font-size:14px;font-weight:700;margin-bottom:6px;color:#fff}
+.feat p{font-size:13px;color:#666;line-height:1.5}
+
+.footer{text-align:center;padding:2rem;color:#444;font-size:12px;border-top:1px solid rgba(255,255,255,.06);margin-top:5rem}
+
+.PANEL_URL{display:none}
+
+@media(max-width:640px){
+  .features{grid-template-columns:1fr}
+  .nav{padding:1rem 1.5rem}
+  .hero{padding:6rem 1.5rem 3rem}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="nav-badge">OC</div>
+    <span class="nav-name">Oi, Cheguei</span>
+  </div>
+  <a href="SUBSTITUA_PELO_LINK_DO_PAINEL" class="nav-link">Acessar painel →</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="tag"><span class="tag-dot"></span>Mesa de Trabalho — SP02</div>
+  <h1>Gestão de tarefas do <span>Oi, Cheguei</span><br><span style="font-size:.5em;font-weight:600;color:#aaa;letter-spacing:.02em">Mesa de Trabalho</span></h1>
+  <p>Acompanhe em tempo real as tarefas determinadas durante as Mesas de Trabalho, organizadas por responsável, prioridade, data e status, com histórico de observações e alertas de atraso.</p>
+  <a href="SUBSTITUA_PELO_LINK_DO_PAINEL" class="btn-primary">
+    Acessar o painel
+    <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+
+  <div class="stats-row">
+    <div class="stat-item"><div class="stat-num">↻</div><div class="stat-lbl">Reset automático segundas</div></div>
+    <div class="stat-item"><div class="stat-num">⚑</div><div class="stat-lbl">Indicador de atraso</div></div>
+    <div class="stat-item"><div class="stat-num">✓</div><div class="stat-lbl">Histórico de observações</div></div>
+  </div>
+</section>
+
+<div class="features">
+  <div class="feat">
+    <div class="feat-icon">📋</div>
+    <h3>Tarefas recorrentes</h3>
+    <p>Tarefas semanais voltam automaticamente para pendente toda segunda-feira.</p>
+  </div>
+  <div class="feat">
+    <div class="feat-icon">👤</div>
+    <h3>Filtro por responsável</h3>
+    <p>Visualize só as tarefas de cada membro do time com um clique.</p>
+  </div>
+  <div class="feat">
+    <div class="feat-icon">📊</div>
+    <h3>Exportar</h3>
+    <p>Gere PDF, CSV ou copie o resumo formatado para o WhatsApp do time.</p>
+  </div>
+</div>
+
+<footer class="footer">Oi, Cheguei · Mesa de Trabalho · SP02</footer>
+
+</body>
+</html>
